@@ -2,6 +2,7 @@ class Internal::CheckNewVersionsJob < ApplicationJob
   queue_as :scheduled_jobs
 
   def perform
+    return if ENV.fetch('DISABLE_VERSION_CHECK', 'true') == 'true'
     return unless Rails.env.production?
 
     latest_version = fetch_latest_github_release
@@ -11,7 +12,7 @@ class Internal::CheckNewVersionsJob < ApplicationJob
   private
 
   def fetch_latest_github_release
-    response = HTTParty.get('https://api.github.com/repos/fazer-ai/chatwoot/releases/latest', timeout: 5)
+    response = HTTParty.get('https://api.github.com/repos/chatwoot/chatwoot/releases/latest', timeout: 5)
     unless response.success?
       Rails.logger.error "Failed to fetch latest GitHub release: HTTP #{response.code} - #{response.body}"
       return nil
